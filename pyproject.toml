@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "PaperPod"
+version = "0.1.0"
+description = ""
+authors = ["Michelle Herrera <mher754@wgu.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+langchain-community = "^0.2.10"
+requests = "^2.32.3"
+pydantic = "^2.8.2"
+pdfplumber = "^0.11.2"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.11.1"
+ruff = "^0.5.6"
+pytest = "^8.3.2"
+types-requests = "^2.32.0.20240712"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
