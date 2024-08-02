@@ -16,8 +16,12 @@ jobs:
             feat
             chore
             release
-          requireScope: false
-          wip: true
+          scopes: |
+            whitepaper-\d+
+            audio-\d+
+            script-\d+
+            podcast-\d+
+          requireScope: true
       - name: Check out the repository
         uses: actions/checkout@v4
 
