@@ -45,5 +45,6 @@ def test_get_white_paper_failure(mocker, arxiv_service) -> None:
     result = arxiv_service.get_white_paper(path, paper_id)
 
     # Assertions
-    assert result is None
+    assert isinstance(result, Exception)
+    assert str(result) == "Failed to retrieve the PDF: 404"
     mocker.assert_called_once_with(f"http://arxiv.org/{path}/{paper_id}")
