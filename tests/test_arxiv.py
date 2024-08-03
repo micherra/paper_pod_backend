@@ -33,6 +33,46 @@ def mock_abstract():
 
 
 @pytest.fixture
+def mock_category():
+    return """
+        <html>
+            <body>
+                <div id="category_taxonomy_list" class="large-data-list">
+                    <h2 class="accordion-head">Computer Science</h2>
+                        <div class="accordion-body">
+                            <div class=" columns ">
+                                <div class="column">
+                                    <div class="columns divided">
+                                        <div class="column is-one-fifth">
+                                            <h4>
+                                                cs.AI <span>(Artificial Intelligence)</span>
+                                            </h4>
+                                        </div>
+                                        <div class="column">
+                                            <p>Covers all areas of AI except Vision, Robotics, Machine Learning, Multiagent Systems, and Computation and Language (Natural Language Processing), which have separate subject areas. In particular, includes Expert Systems, Theorem Proving (although this may overlap with Logic in Computer Science), Knowledge Representation, Planning, and Uncertainty in AI. Roughly includes material in ACM Subject Classes I.2.0, I.2.1, I.2.3, I.2.4, I.2.8, and I.2.11.</p>
+                                        </div>
+                                    </div>
+                                    <div class="columns divided">
+                                        <div class="column is-one-fifth">
+                                            <h4>
+                                                cs.AR <span>(Hardware Architecture)</span>
+                                            </h4>
+                                        </div>
+                                        <div class="column">
+                                            <p>Covers systems organization and hardware architecture. Roughly includes material in ACM Subject Classes C.0, C.1, and C.5.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h2>
+                </div>
+            </body>
+        </html>
+    """
+
+
+@pytest.fixture
 def arxiv_service():
     source = "http://arxiv.org"
     return ArXivService(source=source)
@@ -122,6 +162,46 @@ def test_get_metadata_success(
     }
 
 
+def test_categories_success(mock_get, arxiv_service, mock_category) -> None:
+    # Set up the mock to return a successful response
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.text = mock_category
+    mock_get.return_value = mock_response
+
+    result = arxiv_service.categories()
+
+    # Assertions
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+
+def test_api_failures(mock_get, arxiv_service) -> None:
+    paper_id = "9876.54321"
+
+    # Set up the mock to return a failed response
+    mock_response = Mock()
+    mock_response.status_code = 404
+    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(404)
+    mock_get.return_value = mock_response
+
+    arxiv_service.get_white_paper(paper_id)
+
+    # Assertions
+    assert isinstance(arxiv_service.get_white_paper(paper_id), Exception)
+    assert (
+        str(arxiv_service.get_white_paper(paper_id))
+        == "Failed to retrieve the PDF: 404"
+    )
+    assert isinstance(arxiv_service.get_metadata(paper_id), Exception)
+    assert (
+        str(arxiv_service.get_metadata(paper_id))
+        == "Failed to retrieve the metadata: 404"
+    )
+    assert isinstance(arxiv_service.categories(), Exception)
+    assert str(arxiv_service.categories()) == "Failed to retrieve the categories: 404"
+
+
 def test_parse_parse_bibtex(arxiv_service, mock_bibtex) -> None:
     actual = {
         "title": "A Natural Language Processing Framework for Hotel Recommendation Based on Users' Text Reviews",
@@ -137,6 +217,31 @@ def test_parse_parse_bibtex(arxiv_service, mock_bibtex) -> None:
     assert result == actual
 
 
-def test_parse_html(arxiv_service, mock_abstract) -> None:
-    result = arxiv_service.parse_html(mock_abstract)
+def test_parse_abstract_html(arxiv_service, mock_abstract) -> None:
+    result = arxiv_service.parse_abstract_html(mock_abstract)
     assert result == "This is a test abstract."
+
+
+def test_parse_category_html(arxiv_service, mock_category) -> None:
+    result = arxiv_service.parse_categories_html(mock_category)
+    print(result)
+    assert result == [
+        {
+            "name": "Artificial Intelligence",
+            "group": "Computer Science",
+            "category": "cs.AI",
+            "description": "Covers all areas of AI except Vision, Robotics, Machine Learning, Multiagent Systems, "
+            "and Computation and Language (Natural Language Processing), which have separate subject "
+            "areas. In particular, includes Expert Systems, Theorem Proving (although this may overlap "
+            "with Logic in Computer Science), Knowledge Representation, Planning, and Uncertainty in "
+            "AI. Roughly includes material in ACM Subject Classes I.2.0, I.2.1, I.2.3, I.2.4, I.2.8, "
+            "and I.2.11.",
+        },
+        {
+            "name": "Hardware Architecture",
+            "group": "Computer Science",
+            "category": "cs.AR",
+            "description": "Covers systems organization and hardware architecture. Roughly includes material in ACM "
+            "Subject Classes C.0, C.1, and C.5.",
+        },
+    ]
