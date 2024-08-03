@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 import bibtexparser
 import requests
@@ -81,29 +82,34 @@ class ArXivService(WhitePaperService):
         )
 
     @staticmethod
-    def parse_categories_html(html: str) -> list[ArXivCategory]:
-        categories = []
+    def parse_categories_html(html: str) -> List[ArXivCategory]:
+        categories: List[ArXivCategory] = []
         soup = BeautifulSoup(html, "html.parser")
-        categories_list = soup.find_all("div", id="category_taxonomy_list")
-        for category in categories_list:
-            group_name = (
-                category.find_next("h2", class_="accordion-head").text.strip()
-                if category
-                else ""
-            )
-            topics = soup.find_all("div", class_="columns divided")
-            for topic in topics:
-                topic_html = topic.find_next("h4").text.strip()
-                parsed_topic = re.match(r"(.+?)\s*\((.+?)\)", topic_html)
-                topic_id = parsed_topic.group(1) if parsed_topic else ""
-                topic_name = parsed_topic.group(2) if parsed_topic else ""
-                description = re.sub(r"\s+", " ", topic.find_next("p").text).strip()
-                categories.append(
-                    ArXivCategory(
-                        name=topic_name,
-                        group=group_name,
-                        category=topic_id,
-                        description=description,
-                    )
+        category_taxonomy_list = soup.find_all("div", id="category_taxonomy_list")
+
+        for category in category_taxonomy_list:
+            for group_name_element in category.find_all("h2", class_="accordion-head"):
+                category_name = group_name_element.text.strip()
+                accordion_body = group_name_element.find_next_sibling(
+                    "div", class_="accordion-body"
                 )
+
+                if accordion_body:
+                    topics = accordion_body.find_all("h4")
+                    for topic in topics:
+                        parsed_topic = re.match(r"(.+?)\s*\((.+?)\)", topic.text)
+                        if parsed_topic:
+                            topic_id = parsed_topic.group(1).strip()
+                            topic_name = parsed_topic.group(2).strip()
+                            description = re.sub(
+                                r"\s+", " ", topic.find_next("p").text
+                            ).strip()
+                            categories.append(
+                                ArXivCategory(
+                                    id=topic_id,
+                                    name=topic_name,
+                                    category=category_name,
+                                    description=description,
+                                )
+                            )
         return categories

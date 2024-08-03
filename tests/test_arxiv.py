@@ -1,75 +1,26 @@
 import pytest
 from unittest.mock import Mock, patch
 import requests
+
+from constants.abstract import ABSTRACT_HTML, PARSED_ABSTRACT
+from constants.bibtex import BIBTEX_TEXT, PARSED_BIBTEX
+from constants.category import CATEGORY_HTML, PARSED_CATEGORY
 from whitepaper.arXiv_service import ArXivService
 
 
 @pytest.fixture
 def mock_bibtex():
-    return """
-        @misc{aravani2024naturallanguageprocessingframework,
-            title={A Natural Language Processing Framework for Hotel Recommendation Based on Users' Text Reviews}, 
-            author={Lavrentia Aravani and Emmanuel Pintelas and Christos Pierrakeas and Panagiotis Pintelas},
-            year={2024},
-            eprint={2408.00716},
-            archivePrefix={arXiv},
-            primaryClass={cs.LG},
-            url={https://arxiv.org/abs/2408.00716}, 
-        }
-    """
+    return BIBTEX_TEXT
 
 
 @pytest.fixture
 def mock_abstract():
-    return """
-        <html>
-            <body>
-                <blockquote class="abstract mathjax">
-                    <span class="descriptor">Abstract:</span>This is a test abstract.
-                </blockquote>
-            </body>
-        </html>
-    """
+    return ABSTRACT_HTML
 
 
 @pytest.fixture
 def mock_category():
-    return """
-        <html>
-            <body>
-                <div id="category_taxonomy_list" class="large-data-list">
-                    <h2 class="accordion-head">Computer Science</h2>
-                        <div class="accordion-body">
-                            <div class=" columns ">
-                                <div class="column">
-                                    <div class="columns divided">
-                                        <div class="column is-one-fifth">
-                                            <h4>
-                                                cs.AI <span>(Artificial Intelligence)</span>
-                                            </h4>
-                                        </div>
-                                        <div class="column">
-                                            <p>Covers all areas of AI except Vision, Robotics, Machine Learning, Multiagent Systems, and Computation and Language (Natural Language Processing), which have separate subject areas. In particular, includes Expert Systems, Theorem Proving (although this may overlap with Logic in Computer Science), Knowledge Representation, Planning, and Uncertainty in AI. Roughly includes material in ACM Subject Classes I.2.0, I.2.1, I.2.3, I.2.4, I.2.8, and I.2.11.</p>
-                                        </div>
-                                    </div>
-                                    <div class="columns divided">
-                                        <div class="column is-one-fifth">
-                                            <h4>
-                                                cs.AR <span>(Hardware Architecture)</span>
-                                            </h4>
-                                        </div>
-                                        <div class="column">
-                                            <p>Covers systems organization and hardware architecture. Roughly includes material in ACM Subject Classes C.0, C.1, and C.5.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </h2>
-                </div>
-            </body>
-        </html>
-    """
+    return CATEGORY_HTML
 
 
 @pytest.fixture
@@ -132,16 +83,7 @@ def test_get_metadata_success(
     mock_get.assert_any_call(f"http://arxiv.org/abs/{paper_id}")
     mock_get.assert_any_call(f"http://arxiv.org/bibtex/{paper_id}")
     assert isinstance(result, dict)
-    assert result == {
-        "title": "A Natural Language Processing Framework for Hotel Recommendation Based on Users' Text Reviews",
-        "authors": [
-            "Lavrentia Aravani",
-            "Emmanuel Pintelas",
-            "Christos Pierrakeas",
-            "Panagiotis Pintelas",
-        ],
-        "abstract": "This is a test abstract.",
-    }
+    assert result == PARSED_BIBTEX | {"abstract": PARSED_ABSTRACT}
 
 
 def test_categories_success(mock_get, arxiv_service, mock_category) -> None:
@@ -185,45 +127,16 @@ def test_api_failures(mock_get, arxiv_service) -> None:
 
 
 def test_parse_parse_bibtex(arxiv_service, mock_bibtex) -> None:
-    actual = {
-        "title": "A Natural Language Processing Framework for Hotel Recommendation Based on Users' Text Reviews",
-        "authors": [
-            "Lavrentia Aravani",
-            "Emmanuel Pintelas",
-            "Christos Pierrakeas",
-            "Panagiotis Pintelas",
-        ],
-    }
-
     result = arxiv_service.parse_bibtex(mock_bibtex)
-    assert result == actual
+    assert result == PARSED_BIBTEX
 
 
 def test_parse_abstract_html(arxiv_service, mock_abstract) -> None:
     result = arxiv_service.parse_abstract_html(mock_abstract)
-    assert result == "This is a test abstract."
+    assert result == PARSED_ABSTRACT
 
 
 def test_parse_category_html(arxiv_service, mock_category) -> None:
     result = arxiv_service.parse_categories_html(mock_category)
     print(result)
-    assert result == [
-        {
-            "name": "Artificial Intelligence",
-            "group": "Computer Science",
-            "category": "cs.AI",
-            "description": "Covers all areas of AI except Vision, Robotics, Machine Learning, Multiagent Systems, "
-            "and Computation and Language (Natural Language Processing), which have separate subject "
-            "areas. In particular, includes Expert Systems, Theorem Proving (although this may overlap "
-            "with Logic in Computer Science), Knowledge Representation, Planning, and Uncertainty in "
-            "AI. Roughly includes material in ACM Subject Classes I.2.0, I.2.1, I.2.3, I.2.4, I.2.8, "
-            "and I.2.11.",
-        },
-        {
-            "name": "Hardware Architecture",
-            "group": "Computer Science",
-            "category": "cs.AR",
-            "description": "Covers systems organization and hardware architecture. Roughly includes material in ACM "
-            "Subject Classes C.0, C.1, and C.5.",
-        },
-    ]
+    assert result == PARSED_CATEGORY
