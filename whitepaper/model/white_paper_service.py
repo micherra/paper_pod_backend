@@ -10,3 +10,6 @@ class WhitePaperService(ABC):
 
     def get_metadata(self, paper_id: str):
         pass
+
+    def categories(self):
+        pass
