@@ -107,10 +107,19 @@ def test_get_metadata_success(
     result = arxiv_service.get_metadata(paper_id)
 
     # Assertions
-    assert isinstance(result, dict)
-    assert result["abstract"] == "This is a test abstract."
     mock_get.assert_any_call(f"http://arxiv.org/abs/{paper_id}")
     mock_get.assert_any_call(f"http://arxiv.org/bibtex/{paper_id}")
+    assert isinstance(result, dict)
+    assert result == {
+        "title": "A Natural Language Processing Framework for Hotel Recommendation Based on Users' Text Reviews",
+        "authors": [
+            "Lavrentia Aravani",
+            "Emmanuel Pintelas",
+            "Christos Pierrakeas",
+            "Panagiotis Pintelas",
+        ],
+        "abstract": "This is a test abstract.",
+    }
 
 
 def test_parse_parse_bibtex(arxiv_service, mock_bibtex) -> None:
