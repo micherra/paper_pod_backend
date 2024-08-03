@@ -1,85 +1,83 @@
 import re
 from typing import List
 
-import bibtexparser
 import requests
 
 from bs4 import BeautifulSoup
+from requests import Response
 
-from whitepaper.model.arXiv_bibtex import ArXivBibtex
 from whitepaper.model.arXiv_category import ArXivCategory
 from whitepaper.model.arXiv_metadata import ArXivMetadata
 from whitepaper.model.white_paper_service import WhitePaperService
 
 
 class ArXivService(WhitePaperService):
-    def __init__(self, source: str):
-        super().__init__(source)
+    def __init__(self):
+        super().__init__()
+        self.arXiv_search_url = "https://export.arxiv.org/api/query"
+        self.arXiv_org = "https://arxiv.org"
         self.PDF_PATH = "/pdf/"
-        self.SOURCE = (
-            "/src/"  # Could be used to retrieve images and figures in the future
-        )
-        self.BIBTEX = "/bibtex/"
-        self.ABSTRACT = "/abs/"
 
-    def get_white_paper(self, paper_id: str) -> Exception | bytes:
-        url = f"{self.source}{self.PDF_PATH}{paper_id}"
+    def get_white_paper(self, paper_id: str) -> bytes:
+        url = f"{self.arXiv_org}{self.PDF_PATH}{paper_id}"
         try:
             pdf_res = requests.get(url)
             pdf_res.raise_for_status()
             print(f"Retrieved the PDF from {pdf_res.url}")
             return pdf_res.content
         except requests.exceptions.RequestException as e:
-            return Exception(f"Failed to retrieve the PDF: {e}")
+            raise Exception(f"Failed to retrieve the PDF: {e}")
 
-    def get_metadata(self, paper_id: str) -> Exception | ArXivMetadata:
-        try:
-            abstract_res = requests.get(f"{self.source}{self.ABSTRACT}{paper_id}")
-            abstract_res.raise_for_status()
-            print("Retrieved the metadata.")
-            abstract = self.parse_abstract_html(abstract_res.text)
-        except requests.exceptions.RequestException as e:
-            return Exception(f"Failed to retrieve the metadata: {e}")
+    def get_metadata(self, paper_id: str) -> List[ArXivMetadata]:
+        metadata_res = self.query(f"id_list={paper_id}")
+        return self.parse_metadata_xml(metadata_res.text)
 
-        try:
-            bibtex_res = requests.get(f"{self.source}{self.BIBTEX}{paper_id}")
-            bibtex_res.raise_for_status()
-            print("Retrieved the BibTeX.")
-            bibtex = self.parse_bibtex(bibtex_res.text)
-        except requests.exceptions.RequestException as e:
-            return Exception(f"Failed to retrieve the BibTeX: {e}")
-
-        return ArXivMetadata(**bibtex, abstract=abstract)
-
-    def categories(self) -> Exception | list[ArXivCategory]:
-        url = f"{self.source}/category_taxonomy"
+    def categories(self) -> List[ArXivCategory]:
+        url = f"{self.arXiv_org}/category_taxonomy"
         try:
             res = requests.get(url)
             res.raise_for_status()
             print("Retrieved the categories.")
             return self.parse_categories_html(res.text)
         except requests.exceptions.RequestException as e:
-            return Exception(f"Failed to retrieve the categories: {e}")
+            raise Exception(f"Failed to retrieve the categories: {e}")
+
+    def search(self, query: str) -> List[ArXivMetadata]:
+        search_res = self.query(query)
+        return self.parse_metadata_xml(search_res.text)
+
+    def query(self, query: str) -> Response:
+        url = f"{self.arXiv_search_url}?{query}"
+        print(url)
+        try:
+            res = requests.get(url)
+            res.raise_for_status()
+            print(f"Retrieved search results for '{query}'.")
+            return res
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to retrieve search results: {e}")
 
     @staticmethod
-    def parse_abstract_html(html: str) -> str:
-        soup = BeautifulSoup(html, "html.parser")
-        abstract_block = soup.select_one('blockquote[class*="abstract"]')
-        if abstract_block is None:
-            return "No abstract available."
-        else:
-            text = abstract_block.get_text(strip=True)
-            if text.startswith("Abstract:"):
-                text = text[len("Abstract:") :].strip()
-            return text
+    def parse_metadata_xml(xml: str) -> List[ArXivMetadata]:
+        soup = BeautifulSoup(str(xml), "xml")
+        entries = soup.find_all("entry")
+        metadata: List[ArXivMetadata] = []
 
-    @staticmethod
-    def parse_bibtex(bibtex: str) -> ArXivBibtex:
-        bib_database = bibtexparser.loads(bibtex)
-        entry = bib_database.entries[0]
-        return ArXivBibtex(
-            title=entry.get("title", ""), authors=entry.get("author", "").split(" and ")
-        )
+        for entry in entries:
+            processed_entry = ArXivMetadata(
+                title=entry.find("title").text.strip().replace("\n", ""),
+                id=entry.find("id").text.strip().split("/")[-1],
+                released=entry.find("published").text.strip(),
+                abstract=entry.find("summary").text.strip().replace("\n", " "),
+                authors=[
+                    author.find("name").text.strip()
+                    for author in entry.find_all("author")
+                ],
+                primary_category=entry.find("arxiv:primary_category")["term"],
+            )
+            metadata.append(processed_entry)
+
+        return metadata
 
     @staticmethod
     def parse_categories_html(html: str) -> List[ArXivCategory]:
