@@ -13,6 +13,7 @@ pydantic = "^2.8.2"
 pdfplumber = "^0.11.2"
 beautifulsoup4 = "^4.12.3"
 bibtexparser = "^1.4.1"
+lxml = "^5.2.2"
 
 
 [tool.poetry.group.dev.dependencies]
