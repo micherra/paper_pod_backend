@@ -27,6 +27,7 @@ jobs:
             audio-\d+
             script-\d+
             podcast-\d+
+            housekeeping-\d+
           requireScope: true
   lint:
     name: Lint
