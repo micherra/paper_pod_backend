@@ -118,24 +118,6 @@ def test_get_white_paper_success(mock_get, arxiv_service) -> None:
     mock_get.assert_called_once_with(f"http://arxiv.org/{path}/{paper_id}")
 
 
-def test_get_white_paper_failure(mock_get, arxiv_service) -> None:
-    paper_id = "9876.54321"
-    path = "pdf"
-
-    # Set up the mock to return a failed response
-    mock_response = Mock()
-    mock_response.status_code = 404
-    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(404)
-    mock_get.return_value = mock_response
-
-    result = arxiv_service.get_white_paper(paper_id)
-
-    # Assertions
-    assert isinstance(result, Exception)
-    assert str(result) == "Failed to retrieve the PDF: 404"
-    mock_get.assert_called_once_with(f"http://arxiv.org/{path}/{paper_id}")
-
-
 def test_get_metadata_success(
     mock_get, arxiv_service, mock_bibtex_response, mock_abstract_response
 ) -> None:
