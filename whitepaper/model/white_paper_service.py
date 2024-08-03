@@ -5,5 +5,8 @@ class WhitePaperService(ABC):
     def __init__(self, source: str):
         self.source = source
 
-    def get_white_paper(self, path: str, paper_id: str):
+    def get_white_paper(self, paper_id: str):
+        pass
+
+    def get_metadata(self, paper_id: str):
         pass
