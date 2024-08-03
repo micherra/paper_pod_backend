@@ -2,9 +2,9 @@ import pytest
 from unittest.mock import Mock, patch
 import requests
 
-from tests.constants.mock_abstract import ABSTRACT_HTML, PARSED_ABSTRACT
-from tests.constants.mock_bibtex import BIBTEX_TEXT, PARSED_BIBTEX
-from tests.constants.mock_category import CATEGORY_HTML, PARSED_CATEGORY
+from constants.abstract import ABSTRACT_HTML, PARSED_ABSTRACT
+from constants.bibtex import BIBTEX_TEXT, PARSED_BIBTEX
+from constants.category import CATEGORY_HTML, PARSED_CATEGORY
 from whitepaper.arXiv_service import ArXivService
 
 
