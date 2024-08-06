@@ -2,9 +2,9 @@ import pytest
 from unittest.mock import Mock, patch
 import requests
 
-from constants.category import CATEGORY_HTML, PARSED_CATEGORY
-from constants.metadata import METADATA_XML, PARSED_METADATA
-from whitepaper.arXiv_service import ArXivService
+from server.tests.constants.category import CATEGORY_HTML, PARSED_CATEGORY
+from server.tests.constants.metadata import METADATA_XML, PARSED_METADATA
+from server.services.whitepaper.arXiv import ArXivService
 
 
 @pytest.fixture
