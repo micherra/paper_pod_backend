@@ -1,7 +1,7 @@
-from typing import TypedDict
+from pydantic import BaseModel
 
 
-class ArXivMetadata(TypedDict):
+class ArXivMetadata(BaseModel):
     """
     Represents the metadata of an arXiv article.
     :property title: The title of the article.

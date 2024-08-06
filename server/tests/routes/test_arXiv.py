@@ -13,7 +13,7 @@ class MockArXivService:
         return b"%PDF-1.4..."
 
     def get_metadata(self, paper_id: str):
-        return PARSED_METADATA
+        return PARSED_METADATA[0]
 
     def categories(self):
         return PARSED_CATEGORY
@@ -51,14 +51,14 @@ def test_get_metadata_integration(client):
     response = client.get(f"/metadata/{paper_id}")
 
     assert response.status_code == 200
-    assert response.json() == PARSED_METADATA
+    assert response.json() == PARSED_METADATA[0].model_dump()
 
 
 def test_get_categories_integration(client):
     response = client.get("/categories")
 
     assert response.status_code == 200
-    assert response.json() == PARSED_CATEGORY
+    assert response.json() == [category.model_dump() for category in PARSED_CATEGORY]
 
 
 def test_search_papers_integration(client):
@@ -66,4 +66,4 @@ def test_search_papers_integration(client):
     response = client.post("/search", json=params)
 
     assert response.status_code == 200
-    assert response.json() == PARSED_METADATA
+    assert response.json() == [metadata.model_dump() for metadata in PARSED_METADATA]

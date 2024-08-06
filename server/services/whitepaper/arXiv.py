@@ -28,9 +28,9 @@ class ArXivService(WhitePaperService):
         except requests.exceptions.RequestException as e:
             raise Exception(f"Failed to retrieve the PDF: {e}")
 
-    def get_metadata(self, paper_id: str) -> List[ArXivMetadata]:
+    def get_metadata(self, paper_id: str) -> ArXivMetadata:
         metadata_res = self.query(f"id_list={paper_id}")
-        return self.parse_metadata_xml(metadata_res.text)
+        return self.parse_metadata_xml(metadata_res.text)[0]
 
     def categories(self) -> List[ArXivCategory]:
         url = f"{self.arXiv_org}/category_taxonomy"
