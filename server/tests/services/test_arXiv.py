@@ -58,9 +58,7 @@ def test_get_metadata_success(mock_get, arxiv_service, mock_metadata) -> None:
     result = arxiv_service.get_metadata(paper_id)
 
     # Assertions
-    assert isinstance(result, list)
-    assert len(result) == 1
-    assert result[0]["id"] == "2408.00716v1"
+    assert result.id == "2408.00716v1"
     mock_get.assert_called_once_with(
         f"https://export.arxiv.org/api/query?id_list={paper_id}"
     )

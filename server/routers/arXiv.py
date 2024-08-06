@@ -11,6 +11,8 @@ from server.routers.swagger.arXiv_router import (
 )
 from server.services.whitepaper.arXiv import ArXivService
 from server.routers.utils.arXiv_query import get_arxiv_query
+from server.services.whitepaper.model.arXiv_category import ArXivCategory
+from server.services.whitepaper.model.arXiv_metadata import ArXivMetadata
 
 arXiv_router = APIRouter(
     prefix="", tags=["arXiv"], dependencies=[Depends(get_arxiv_service)]
@@ -20,7 +22,7 @@ arXiv_router = APIRouter(
 @arXiv_router.get(**get_white_paper_swagger())
 def get_white_paper(
     paper_id: str, arxiv_service: ArXivService = Depends(get_arxiv_service)
-):
+) -> FileResponse:
     try:
         res = arxiv_service.get_white_paper(paper_id)
         pdf_file_path = f"/tmp/{paper_id}.pdf"  # Temporary file path
@@ -34,7 +36,7 @@ def get_white_paper(
 @arXiv_router.get(**get_metadata_swagger())
 def get_metadata(
     paper_id: str, arxiv_service: ArXivService = Depends(get_arxiv_service)
-):
+) -> ArXivMetadata:
     try:
         print(arxiv_service.get_metadata(paper_id))
         return arxiv_service.get_metadata(paper_id)
@@ -43,7 +45,9 @@ def get_metadata(
 
 
 @arXiv_router.get(**get_categories_swagger())
-def get_categories(arxiv_service: ArXivService = Depends(get_arxiv_service)):
+def get_categories(
+    arxiv_service: ArXivService = Depends(get_arxiv_service),
+) -> list[ArXivCategory]:
     try:
         return arxiv_service.categories()
     except HTTPException as e:

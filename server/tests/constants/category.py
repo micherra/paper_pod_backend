@@ -1,3 +1,5 @@
+from server.services.whitepaper.model.arXiv_category import ArXivCategory
+
 CATEGORY_HTML = """
 <html>
     <body class="with-cu-identity">
@@ -46,23 +48,23 @@ CATEGORY_HTML = """
 """
 
 PARSED_CATEGORY = [
-    {
-        "id": "cs.AI",
-        "name": "Artificial Intelligence",
-        "category": "Computer Science",
-        "description": "Covers all areas of AI except Vision, Robotics, Machine Learning, Multiagent Systems, "
+    ArXivCategory(
+        id="cs.AI",
+        name="Artificial Intelligence",
+        category="Computer Science",
+        description="Covers all areas of AI except Vision, Robotics, Machine Learning, Multiagent Systems, "
         "and Computation and Language (Natural Language Processing), which have separate subject "
         "areas. In particular, includes Expert Systems, Theorem Proving (although this may overlap "
         "with Logic in Computer Science), Knowledge Representation, Planning, and Uncertainty in "
         "AI. Roughly includes material in ACM Subject Classes I.2.0, I.2.1, I.2.3, I.2.4, I.2.8, "
         "and I.2.11.",
-    },
-    {
-        "id": "econ.EM",
-        "name": "Econometrics",
-        "category": "Economics",
-        "description": "Econometric Theory, Micro-Econometrics, Macro-Econometrics, Empirical Content of Economic "
+    ),
+    ArXivCategory(
+        id="econ.EM",
+        name="Econometrics",
+        category="Economics",
+        description="Econometric Theory, Micro-Econometrics, Macro-Econometrics, Empirical Content of Economic "
         "Relations discovered via New Methods, Methodological Aspects of the Application of "
         "Statistical Inference to Economic Data.",
-    },
+    ),
 ]

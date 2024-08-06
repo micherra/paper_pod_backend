@@ -1,7 +1,7 @@
-from typing import TypedDict
+from pydantic import BaseModel
 
 
-class ArXivCategory(TypedDict):
+class ArXivCategory(BaseModel):
     id: str
     name: str
     category: str
