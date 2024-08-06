@@ -6,9 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 
-from whitepaper.model.arXiv_category import ArXivCategory
-from whitepaper.model.arXiv_metadata import ArXivMetadata
-from whitepaper.model.white_paper_service import WhitePaperService
+from server.services.whitepaper.model.arXiv_category import ArXivCategory
+from server.services.whitepaper.model.arXiv_metadata import ArXivMetadata
+from server.services.whitepaper.model.white_paper_service import WhitePaperService
 
 
 class ArXivService(WhitePaperService):

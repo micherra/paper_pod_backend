@@ -1,4 +1,4 @@
-from whitepaper.model.arXiv_metadata import ArXivMetadata
+from server.services.whitepaper.model.arXiv_metadata import ArXivMetadata
 
 METADATA_XML = """
 <?xml version="1.0" encoding="UTF-8"?>

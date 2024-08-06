@@ -1,7 +1,7 @@
-from abc import ABC
+from server.services.models.base_service import BaseService
 
 
-class WhitePaperService(ABC):
+class WhitePaperService(metaclass=BaseService):
     def get_white_paper(self, paper_id: str):
         pass
 

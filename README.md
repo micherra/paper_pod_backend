@@ -36,3 +36,11 @@ Pytest is used to run tests. To run tests, run the following command:
 ```bash
 poetry run pytest
 ```
+
+## Running the PaperPod API
+To run the PaperPod API, run the following command:
+```bash
+poetry run fastapi dev
+```
+
+To view the API documentation, navigate to `http://127.0.0.1:8000/docs`.
